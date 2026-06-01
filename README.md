@@ -1,30 +1,61 @@
-# Task 2 — Jenkins CI/CD Pipeline
+# ElevateLabs-DevOps-Task2
+
+## Jenkins CI/CD Pipeline with Docker
 
 **DevOps Internship | ElevateLabs**
 
 ---
 
-## What This Project Does
+## Project Overview
 
-A simple Flask web application with a fully automated Jenkins CI/CD pipeline.
-Every time code is pushed to the repository, Jenkins automatically:
-1. Pulls the latest code
-2. Builds a Docker image
-3. Runs automated tests
-4. Deploys the container
-5. Verifies the app is healthy
+This project demonstrates a complete CI/CD (Continuous Integration and Continuous Deployment) pipeline using Jenkins, Docker, GitHub, and a Flask web application.
+
+The pipeline automates the software delivery process by building the application, running automated tests, deploying a Docker container, and performing a health check to verify successful deployment.
+
+---
+
+## CI/CD Workflow
+
+```text
+Developer Pushes Code
+        ↓
+      GitHub
+        ↓
+      Jenkins
+        ↓
+ Build Docker Image
+        ↓
+   Run Tests
+        ↓
+ Deploy Container
+        ↓
+  Health Check
+        ↓
+      Success
+```
+
+---
+
+## Technologies Used
+
+* Jenkins
+* Docker
+* Python
+* Flask
+* Pytest
+* GitHub
 
 ---
 
 ## Project Structure
 
-```
-jenkins-cicd-task/
-├── app.py              # Flask web application
-├── test_app.py         # Pytest test cases
-├── requirements.txt    # Python dependencies
-├── Dockerfile          # Container build instructions
-├── Jenkinsfile         # CI/CD pipeline definition
+```text
+ElevateLabs-DevOps-Task2/
+├── app.py
+├── test_app.py
+├── requirements.txt
+├── Dockerfile
+├── Jenkinsfile
 └── README.md
 ```
 
@@ -32,113 +63,163 @@ jenkins-cicd-task/
 
 ## Pipeline Stages
 
-| Stage | What It Does |
-|-------|-------------|
-| Checkout | Pulls latest code from GitHub |
-| Build | Builds Docker image from Dockerfile |
-| Test | Runs pytest inside Docker container |
-| Deploy | Stops old container, starts new one |
-| Health Check | Hits `/health` endpoint to confirm app is live |
+### 1. Checkout
+
+Jenkins pulls the latest source code from GitHub.
+
+### 2. Build
+
+A Docker image is created using the Dockerfile.
+
+### 3. Test
+
+Automated tests are executed using Pytest.
+
+### 4. Deploy
+
+The old container is stopped and a new container is deployed.
+
+### 5. Health Check
+
+The application health endpoint is verified to ensure successful deployment.
 
 ---
 
-## How to Run Locally
+## Application Endpoints
 
-### Prerequisites
-- Docker installed
-- Python 3.11+
+### Home Endpoint
 
-### Run without Jenkins
-```bash
-# Build image
-docker build -t flask-cicd-app .
-
-# Run container
-docker run -d -p 5000:5000 --name flask-app flask-cicd-app
-
-# Test endpoints
-curl http://localhost:5000/
-curl http://localhost:5000/health
+```http
+GET /
 ```
 
-### Run tests
+Response:
+
+```json
+{
+  "message": "Hello from Jenkins CI/CD Pipeline!",
+  "status": "running",
+  "version": "1.0.0"
+}
+```
+
+### Health Check Endpoint
+
+```http
+GET /health
+```
+
+Response:
+
+```json
+{
+  "status": "healthy"
+}
+```
+
+---
+
+## Running the Application Locally
+
+### Install Dependencies
+
 ```bash
 pip install -r requirements.txt
+```
+
+### Run Application
+
+```bash
+python app.py
+```
+
+### Run Tests
+
+```bash
 pytest test_app.py -v
 ```
 
 ---
 
-## Jenkins Setup Steps
+## Docker Commands
 
-### 1. Install Jenkins
+### Build Docker Image
+
 ```bash
-# Ubuntu/Debian
-sudo apt update
-sudo apt install -y openjdk-17-jdk
-wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -
-sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
-sudo apt update
-sudo apt install -y jenkins
-sudo systemctl start jenkins
-sudo systemctl enable jenkins
+docker build -t flask-cicd-app .
 ```
-Access Jenkins at: `http://localhost:8080`
 
-### 2. Required Jenkins Plugins
-- Git Plugin
-- Docker Pipeline Plugin
-- Pipeline Plugin
+### Run Docker Container
 
-### 3. Create Pipeline Job
-1. New Item → Pipeline
-2. Under "Pipeline" → select "Pipeline script from SCM"
-3. SCM: Git → paste your GitHub repo URL
-4. Script Path: `Jenkinsfile`
-5. Save
+```bash
+docker run -d -p 5000:5000 --name flask-app flask-cicd-app
+```
 
-### 4. Enable Auto-Trigger on Push
-1. In job config → Build Triggers → check "GitHub hook trigger for GITScm polling"
-2. In GitHub repo → Settings → Webhooks → Add webhook
-3. URL: `http://YOUR_JENKINS_IP:8080/github-webhook/`
+### Verify Running Containers
+
+```bash
+docker ps
+```
 
 ---
 
-## API Endpoints
+## Jenkins Setup
 
-| Endpoint | Method | Response |
-|----------|--------|----------|
-| `/` | GET | App info + version |
-| `/health` | GET | Health status |
-
----
-
-## Interview Questions — Answers
-
-**1. What is Jenkins and how is it used in CI/CD?**
-Jenkins is an open-source automation server that automates the build, test, and deployment stages of software delivery. In CI/CD, Jenkins monitors a code repository and automatically runs a pipeline whenever changes are pushed, ensuring code is always tested and deployable.
-
-**2. What is a Jenkinsfile?**
-A Jenkinsfile is a text file written in Groovy DSL that defines the entire CI/CD pipeline as code. It lives in the root of the repository so pipeline changes are versioned alongside application code.
-
-**3. How do you create and configure Jenkins pipelines?**
-Create a "Pipeline" job in Jenkins, point it to a Git repository, specify the Jenkinsfile path, and configure triggers. The Jenkinsfile defines all stages and steps using either Declarative or Scripted syntax.
-
-**4. What are common stages in a Jenkins pipeline?**
-Checkout, Build, Test, Code Analysis (SonarQube), Build Docker Image, Push to Registry, Deploy to Staging, Integration Tests, Deploy to Production, Health Check.
-
-**5. Declarative vs Scripted pipeline?**
-
-| | Declarative | Scripted |
-|--|------------|---------|
-| Syntax | Structured `pipeline {}` block | Full Groovy code |
-| Learning curve | Easy | Harder |
-| Error checking | Built-in validation | Manual |
-| Flexibility | Less flexible | Fully flexible |
-| Recommended for | Most use cases | Complex custom logic |
-
-Declarative is the modern standard and what this project uses.
+1. Install Jenkins
+2. Install Git Plugin
+3. Install Pipeline Plugin
+4. Install Docker Pipeline Plugin
+5. Create a Pipeline Job
+6. Connect Jenkins with GitHub Repository
+7. Configure Jenkinsfile
+8. Run Pipeline
 
 ---
 
-*Submitted by: [Your Name] | ElevateLabs DevOps Internship*
+## Key DevOps Concepts Demonstrated
+
+* Continuous Integration (CI)
+* Continuous Deployment (CD)
+* Pipeline as Code
+* Docker Containerization
+* Automated Testing
+* Automated Deployment
+* Health Monitoring
+* Version Control with GitHub
+
+---
+
+## Interview Questions
+
+### What is CI/CD?
+
+CI/CD is a software development practice that automates code integration, testing, and deployment to improve delivery speed and reliability.
+
+### What is Jenkins?
+
+Jenkins is an open-source automation server used to build, test, and deploy applications automatically.
+
+### What is Docker?
+
+Docker is a containerization platform that packages applications and their dependencies into portable containers.
+
+### What is a Jenkinsfile?
+
+A Jenkinsfile is a text file that defines the CI/CD pipeline as code using Groovy syntax.
+
+### Why use Docker in CI/CD?
+
+Docker ensures that applications run consistently across development, testing, and production environments.
+
+---
+
+## Author
+
+Ashish Vijaybhai Shakoriya
+
+DevOps Internship Task 2
+ElevateLabs Internship
+
+---
+
+**Project Status:** Successfully Implemented Jenkins CI/CD Pipeline with Docker Integration.
