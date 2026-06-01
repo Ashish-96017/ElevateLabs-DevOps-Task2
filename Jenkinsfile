@@ -22,21 +22,22 @@ pipeline {
         }
 
         stage('Deploy') {
-            steps {
-                bat '''
-                docker stop flask-app || exit 0
-                docker rm flask-app || exit 0
-                docker run -d -p 5000:5000 --name flask-app flask-cicd-app
-                '''
-            }
-        }
-
-        stage('Health Check') {
-            steps {
-                bat 'curl http://localhost:5000/health'
-            }
-        }
+    steps {
+        bat '''
+        docker rm -f flask-app 2>nul
+        docker run -d -p 5000:5000 --name flask-app flask-cicd-app
+        '''
     }
+}
+
+      stage('Health Check') {
+    steps {
+        bat '''
+        timeout /t 5 >nul
+        curl http://localhost:5000/health
+        '''
+    }
+}
 
     post {
         success {
